@@ -32,7 +32,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 		fileMeta := meta.FileMeta{
 			FileName: head.Filename,
-			Location: "./temp/" + head.Filename,
+			Location: "/tmp/" + head.Filename,
 			UploadAt: time.Now().Format("2006-01-02 15:04:05"),
 		}
 		
@@ -50,14 +50,14 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("Failed to save data into file, err: %s", err.Error())
 			return
 		}
-
-		newFile.Seek(0, 0)
-		fileMeta.FileSha1 = util.FileSha1(newFile)
-		meta.UpdateFileMeta(fileMeta)
 		// 游标重新回到文件头部
 		newFile.Seek(0, 0)
+		fileMeta.FileSha1 = util.FileSha1(newFile)
 
-		fmt.Println(fileMeta)
+		//newFile.Seek(0, 0)
+		//meta.UpdateFileMeta(fileMeta)
+		_ = meta.UpdateFileMetaDB(fileMeta)
+
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 	}
 }
@@ -71,9 +71,13 @@ func UploadSucHandler(w http.ResponseWriter, r *http.Request) {
 func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	filehash := r.Form["filehash"][0]
-	fmt.Println(filehash)
-	fMeta := meta.GetFileMeta(filehash)
-
+	//fmt.Println(filehash)
+	//fMeta := meta.GetFileMeta(filehash)
+	fMeta, err := meta.GetFileMetaDB(filehash)
+	if err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	data, err := json.Marshal(fMeta)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)

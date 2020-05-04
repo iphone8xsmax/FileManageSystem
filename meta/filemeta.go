@@ -1,5 +1,8 @@
 package meta
 
+import (
+	mydb "fileSystem/db"
+)
 
 // FileMeta : 文件元信息结构
 type FileMeta struct {
@@ -21,11 +24,11 @@ func UpdateFileMeta(fmeta FileMeta) {
 	fileMetas[fmeta.FileSha1] = fmeta
 }
 
-//// UpdateFileMetaDB : 新增/更新文件元信息到mysql中
-//func UpdateFileMetaDB(fmeta FileMeta) bool {
-//	return mydb.OnFileUploadFinished(
-//		fmeta.FileSha1, fmeta.FileName, fmeta.FileSize, fmeta.Location)
-//}
+// UpdateFileMetaDB : 新增/更新文件元信息到mysql中
+func UpdateFileMetaDB(fmeta FileMeta) bool {
+	return mydb.OnFileUploadFinished(
+		fmeta.FileSha1, fmeta.FileName, fmeta.FileSize, fmeta.Location)
+}
 
 // GetFileMeta : 通过sha1值获取文件的元信息对象
 func GetFileMeta(fileSha1 string) FileMeta {
@@ -40,22 +43,22 @@ func GetAllFileMeta() []FileMeta {
 	return fMetaArray
 }
 
-//// GetFileMetaDB : 从mysql获取文件元信息
-//func GetFileMetaDB(fileSha1 string) (*FileMeta, error) {
-//	tfile, err := mydb.GetFileMeta(fileSha1)
-//	if tfile == nil || err != nil {
-//		return nil, err
-//	}
-//	fmeta := FileMeta{
-//		FileSha1: tfile.FileHash,
-//		FileName: tfile.FileName.String,
-//		FileSize: tfile.FileSize.Int64,
-//		Location: tfile.FileAddr.String,
-//	}
-//	return &fmeta, nil
-//}
-//
-//// GetLastFileMetas : 获取批量的文件元信息列表
+// GetFileMetaDB : 从mysql获取文件元信息
+func GetFileMetaDB(fileSha1 string) (*FileMeta, error) {
+	tfile, err := mydb.GetFileMeta(fileSha1)
+	if tfile == nil || err != nil {
+		return nil, err
+	}
+	fmeta := FileMeta{
+		FileSha1: tfile.FileHash,
+		FileName: tfile.FileName.String,
+		FileSize: tfile.FileSize.Int64,
+		Location: tfile.FileAddr.String,
+	}
+	return &fmeta, nil
+}
+
+// GetLastFileMetas : 获取批量的文件元信息列表
 //func GetLastFileMetas(count int) []FileMeta {
 //	fMetaArray := make([]FileMeta, len(fileMetas))
 //	for _, v := range fileMetas {
@@ -65,8 +68,8 @@ func GetAllFileMeta() []FileMeta {
 //	sort.Sort(ByUploadTime(fMetaArray))
 //	return fMetaArray[0:count]
 //}
-//
-//// GetLastFileMetasDB : 批量从mysql获取文件元信息
+
+// GetLastFileMetasDB : 批量从mysql获取文件元信息
 //func GetLastFileMetasDB(limit int) ([]FileMeta, error) {
 //	tfiles, err := mydb.GetFileMetaList(limit)
 //	if err != nil {
